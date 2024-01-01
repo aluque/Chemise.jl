@@ -1,7 +1,7 @@
 module Chemise
 
 export ReactionSet, Biblio, @react_str, species, idx, getdens, setdens!, derivs, derivs!,
-    nspecies
+    nspecies, loadtable, RateLookup
 
 using StaticArrays
 
@@ -11,5 +11,6 @@ include("rate.jl")
 include("reactionset.jl")
 include("derivs.jl")
 include("parse.jl")
+include("lookup.jl")
 
 end
