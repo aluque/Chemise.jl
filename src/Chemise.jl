@@ -4,6 +4,13 @@ export ReactionSet, Biblio, @react_str, species, idx, getdens, setdens!, derivs,
     nspecies, loadtable, RateLookup
 
 using StaticArrays
+using DocStringExtensions
+
+@template DEFAULT =
+    """
+    $(SIGNATURES)
+    $(DOCSTRING)
+    """
 
 include("signature.jl")
 include("reaction.jl")
