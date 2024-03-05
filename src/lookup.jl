@@ -96,7 +96,7 @@ function loadtable(fname::AbstractString, T::Type=Float64; resample_into=nothing
     data = readdlm(fname, T)
     
     fx = approxrange(f.(data[:, xcol]); kw...)
-    gy = g.(data[:, ycol])
+    gy = convert(Vector{T}, g.(data[:, ycol]))
 
     if !isnothing(resample_into)
         fx1 = LinRange(fx[begin], fx[end], resample_into)
@@ -119,7 +119,7 @@ function loadtable(tbl, T::Type=Float64; resample_into=nothing,
     fx = approxrange(f.(tbl[xcol]); kw...)
     ycols = isnothing(ycols) ? keys(tbl) : ycols
     
-    gy = [g.(tbl[ycol]) for ycol in ycols]
+    gy = [convert(Vector{T}, g.(tbl[ycol])) for ycol in ycols]
     
     if !isnothing(resample_into)
         fx1 = LinRange(fx[begin], fx[end], resample_into)
