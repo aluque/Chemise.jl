@@ -65,8 +65,10 @@ function list_of_species(reactions, fixed)
     end
 end
 
-
+"Return a tuple with all species in the `ReactionSet` `rs`"
 species(rs::ReactionSet{S}) where S = S
+
+"Find the index of species `s` in the `ReactionSet` `rs`"
 idx(rs::ReactionSet{S}, s::Symbol) where S = speciesindex(S, s)
 idx(rs::ReactionSet{S}, s::String) where S = speciesindex(S, Symbol(s))
 
