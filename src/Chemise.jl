@@ -1,10 +1,11 @@
 module Chemise
 
 export ReactionSet, Biblio, @react_str, species, idx, getdens, setdens!, derivs, derivs!,
-    nspecies, loadtable, RateLookup
+    nspecies, loadtable, RateLookup, .., @withref
 
 using StaticArrays
 using DocStringExtensions
+using MacroTools
 
 @template DEFAULT =
     """
