@@ -17,8 +17,10 @@ Wrap a rate and a bibliography reference.
 """
 struct Biblio{K, S <: AbstractString}
     k::K
-    ref::S
+    ref::Vector{S}
 end
+
+Biblio(k, s::AbstractString) = Biblio(k, [s])
 
 evalk(f::Biblio, args...) = evalk(f.k, args...)
 
@@ -28,8 +30,21 @@ Convenience notation for rates with a reference. `1.0 .. "ref"` returns `Biblio(
 This avoids cumbersome repeats of the `Biblio(...)` constructor when defining a ReactionSet.
 """
 ..(k, ref::AbstractString) = Biblio(k, ref)
+..(k, ref::Vector{<:AbstractString}) = Biblio(k, ref)
 
 
+"""
+Convenience macro to set reference(s) for a number of reaction rates.  Use it inside a list
+of reactions such as
+
+```
+ReactionSet([ "e + O2 + O2 -> O2- + O2" => 0.1,
+              @withref("Einstein1905",
+                     "e + O3 -> O- + O2" => 7.4e-18,
+                     "e + O3 -> O2- + O" => 1.24e-18),
+              "O- + O -> e + O2" => 5e-16])
+```
+"""
 macro withref(ref, exprs...)
     exprs1 = :([])
     for expr in exprs
