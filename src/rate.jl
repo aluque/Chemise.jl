@@ -52,7 +52,6 @@ macro withref(ref, exprs...)
         push!(exprs1.args, :($a => Biblio($b, $ref)))
     end
     res = :(($exprs1)...)
-    @show res
     
     return :(($exprs1)...)
 end
