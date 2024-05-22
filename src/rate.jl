@@ -49,7 +49,7 @@ macro withref(ref, exprs...)
     exprs1 = :([])
     for expr in exprs
         @capture(expr, a_ => b_) || error("all arguments to @withref must be pairs a => b")
-        push!(exprs1.args, :($a => Biblio($b, $ref)))
+        push!(exprs1.args, :($(esc(a)) => Biblio($(esc(b)), $(esc(ref)))))
     end
     res = :(($exprs1)...)
     
