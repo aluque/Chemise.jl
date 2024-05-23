@@ -56,6 +56,8 @@ macro kexpr(x)
     :(RateExpr($(esc(x)), $(Expr(:quote, x))))
 end
 
+evalk(k::RateExpr) = evalk(k.k)
+
 
 """
 Traverse a full `ReactionSet` definition and replace rate coefficient expressions by the
@@ -70,7 +72,7 @@ macro kexprs(s)
             elseif Meta.isexpr(k, :call) && k.args[1] == :RateLookup
                 return x
             else
-                return :($(esc(s)) => Chemise.RateExpr($(esc(k)), $(Expr(:quote, k))) .. $(esc(ref)))
+                return :($s => Chemise.RateExpr($k, $(Expr(:quote, k))) .. $ref)
             end
         elseif @capture(x, s_String_string => k_)
             if k isa Number
@@ -78,13 +80,13 @@ macro kexprs(s)
             elseif Meta.isexpr(k, :call) && k.args[1] == :RateLookup
                 return x
             else
-                return :($(esc(s)) => Chemise.RateExpr($(esc(k)), $(Expr(:quote, k))))
+                return :($s => Chemise.RateExpr($k, $(Expr(:quote, k))))
             end
         else
             return x
         end
     end
-    return out
+    return esc(out)
 end
 
 """

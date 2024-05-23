@@ -1,14 +1,16 @@
 module Chemise
 
 export ReactionSet, Biblio, @react_str, species, idx, getdens, setdens!, derivs, derivs!,
-    nspecies, loadtable, RateLookup, .., @withref, @kexpr
+    nspecies, loadtable, RateLookup, .., @withref, @kexpr, @kexprs, writelatex
 
 using Printf
 using StaticArrays
 using DocStringExtensions
 using MacroTools
+using MacroTools: @capture, postwalk
 using LaTeXStrings
 using Latexify
+using REPL
 
 @template DEFAULT =
     """
