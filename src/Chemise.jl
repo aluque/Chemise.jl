@@ -1,11 +1,14 @@
 module Chemise
 
 export ReactionSet, Biblio, @react_str, species, idx, getdens, setdens!, derivs, derivs!,
-    nspecies, loadtable, RateLookup, .., @withref
+    nspecies, loadtable, RateLookup, .., @withref, @kexpr
 
+using Printf
 using StaticArrays
 using DocStringExtensions
 using MacroTools
+using LaTeXStrings
+using Latexify
 
 @template DEFAULT =
     """
@@ -20,5 +23,6 @@ include("reactionset.jl")
 include("derivs.jl")
 include("parse.jl")
 include("lookup.jl")
+include("latexify.jl")
 
 end

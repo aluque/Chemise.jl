@@ -26,6 +26,68 @@ evalk(f::Biblio, args...) = evalk(f.k, args...)
 
 
 """
+An expression index. It can store anything that can be transformed into latex.
+"""
+const EXPR_INDEX = Any[]
+
+"""
+Wrap a rate with a julia expression.
+"""
+struct RateExpr{K}
+    k::K
+
+    # A julia Expr is mutable and not concrete so if we store it within the struct we turn it
+    # into non-concrete, with a performance penaly. What we do is keeping a global list of expressions
+    # and store here only an index into it.
+    idx::Int
+
+    function RateExpr(k, expr)
+        idx = lastindex(push!(EXPR_INDEX, expr))
+        return new{typeof(k)}(k, idx)
+    end    
+end
+
+
+"""
+Build a `RateExpr` rate from a julia expression. The expression is evaluated immediately to set
+the rate coefficient but it is also saved as a julia Expr to be eventually converted into LaTeX.
+"""
+macro kexpr(x)
+    :(RateExpr($(esc(x)), $(Expr(:quote, x))))
+end
+
+
+"""
+Traverse a full `ReactionSet` definition and replace rate coefficient expressions by the
+corresponding `RateExpr`. It is equivalent to passing rate coefficient arithmetic
+expressions through a `@kexpr` macro.
+"""
+macro kexprs(s)
+    out = postwalk(s) do x
+        if @capture(x, s_String_string => k_ .. ref_)
+            if k isa Number
+                return x
+            elseif Meta.isexpr(k, :call) && k.args[1] == :RateLookup
+                return x
+            else
+                return :($(esc(s)) => Chemise.RateExpr($(esc(k)), $(Expr(:quote, k))) .. $(esc(ref)))
+            end
+        elseif @capture(x, s_String_string => k_)
+            if k isa Number
+                return x
+            elseif Meta.isexpr(k, :call) && k.args[1] == :RateLookup
+                return x
+            else
+                return :($(esc(s)) => Chemise.RateExpr($(esc(k)), $(Expr(:quote, k))))
+            end
+        else
+            return x
+        end
+    end
+    return out
+end
+
+"""
 Convenience notation for rates with a reference. `1.0 .. "ref"` returns `Biblio(1.0, "ref")`.
 This avoids cumbersome repeats of the `Biblio(...)` constructor when defining a ReactionSet.
 """
