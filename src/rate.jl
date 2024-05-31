@@ -126,13 +126,13 @@ A rate taken from a lookup table.
 
 The parameter `H` is a hash of the lookup table; this allows to for compile-time prefetch of the lookup.
 """
-struct RateLookup{L, H}
+struct RateLookup{L, I, H}
     lookup::L
-    index::Int
+    index::I
 
-    function RateLookup(lookup::L, index::Int) where L
+    function RateLookup(lookup::L, index=nothing) where L
         H = hash(L)
-        new{L, H}(lookup, index)
+        new{L, typeof(index), H}(lookup, index)
     end
 end
 

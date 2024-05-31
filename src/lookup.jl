@@ -50,7 +50,7 @@ end
 _prefetch(tbl, x, ::Nothing) = prefetch(tbl, x)
 _prefetch(tbl, x, p) = p
 
-@inline function (tbl::LookupTable)(x; prefetch=nothing)
+@inline function (tbl::LookupTable)(x, col::Nothing=nothing; prefetch=nothing)
     (i, w) = _prefetch(tbl, x, prefetch)
 
     @inbounds gy = w * tbl.gy[i + 1] + (1 - w) * tbl.gy[i]
