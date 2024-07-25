@@ -18,15 +18,20 @@ struct LookupTable{TX, TY, F, G, GI}
 
     # Optionally we provide names to the columns in g to facilitate the description
     colnames::Vector{Symbol}
+
+    # Extrapolate after max. value?
+    extrapol::Bool
     
-    function LookupTable(fx, gy; f=identity, g=identity, ginv=identity, colnames=Symbol[])
+    function LookupTable(fx, gy; f=identity, g=identity, ginv=identity, colnames=Symbol[],
+                         extrapol=false)
         if gy isa Vector{<:Real}
             @assert length(fx) == length(gy)
         else
             @assert all(==(length(fx)), length.(gy))
         end
         
-        new{typeof(fx), typeof(gy), typeof(f), typeof(g), typeof(ginv)}(fx, gy, f, g, ginv, colnames)
+        new{typeof(fx), typeof(gy), typeof(f), typeof(g), typeof(ginv)}(fx, gy, f, g, ginv, colnames,
+                                                                        extrapol)
     end        
 end
 
@@ -38,6 +43,10 @@ end
     if i == 0
         # Allow constant-value extrapolation below the range
         return (1, zero(promote_type(eltype(tbl.fx), typeof(fx))))
+    end
+
+    if tbl.extrapol && i == lastindex(tbl.fx)
+        i -= 1
     end
     
     @boundscheck checkbounds(tbl.fx, i)
@@ -92,7 +101,9 @@ end
 Load a lookuptable from a delimited file.
 """
 function loadtable(fname::AbstractString, T::Type=Float64; resample_into=nothing,
-                   xcol=1, ycol=2, f=identity, g=identity, ginv=identity, kw...)
+                   xcol=1, ycol=2, f=identity, g=identity, ginv=identity,
+                   extrapol=false,
+                   kw...)
     data = readdlm(fname, T)
     
     fx = approxrange(f.(data[:, xcol]); kw...)
@@ -105,7 +116,7 @@ function loadtable(fname::AbstractString, T::Type=Float64; resample_into=nothing
         (fx, gy) = (fx1, gy1)
     end
     
-    LookupTable(fx, gy; f, g, ginv)
+    LookupTable(fx, gy; f, g, ginv, extrapol)
 end
 
 
@@ -115,7 +126,8 @@ If you have a table as a DataFrame pass `tbl=eachcol(df)` in order to support re
 by-columns.
 """
 function loadtable(tbl, T::Type=Float64; resample_into=nothing,
-                   xcol=1, ycols=nothing, f=identity, g=identity, ginv=identity, kw...)
+                   xcol=1, ycols=nothing, f=identity, g=identity, ginv=identity,
+                   extrapol=false, kw...)
     fx = approxrange(f.(tbl[xcol]); kw...)
     ycols = isnothing(ycols) ? keys(tbl) : ycols
     
@@ -130,7 +142,7 @@ function loadtable(tbl, T::Type=Float64; resample_into=nothing,
 
     colnames =  ycols isa Vector{Symbol} ? ycols : Symbol[]
 
-    LookupTable(fx, gy; f, g, ginv, colnames)
+    LookupTable(fx, gy; f, g, ginv, colnames, extrapol)
 end
 
 
