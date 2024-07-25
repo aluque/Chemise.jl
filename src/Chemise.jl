@@ -1,7 +1,7 @@
 module Chemise
 
 export ReactionSet, Biblio, @react_str, species, idx, getdens, setdens!, derivs, derivs!,
-    nspecies, loadtable, RateLookup, .., @withref, @kexpr, @kexprs, writelatex
+    nspecies, loadtable, RateLookup, .., @withref, @kexpr, @kexprs, writelatex, AbstractRate
 
 using Printf
 using StaticArrays

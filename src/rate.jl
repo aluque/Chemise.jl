@@ -1,3 +1,5 @@
+abstract type AbstractRate; end
+
 evalk(r::Reaction, args...; prefetch=nothing) = _evalk(prefetch, r.k, args...)
 _evalk(::Nothing, r, args...) = evalk(r, args...)
 _evalk(prefetch, r, args...) = evalk(r, args...; prefetch)
@@ -15,7 +17,7 @@ varname(::Type{T}) where T = nothing
 """
 Wrap a rate and a bibliography reference.
 """
-struct Biblio{K, S <: AbstractString}
+struct Biblio{K, S <: AbstractString} <: AbstractRate
     k::K
     ref::Vector{S}
 end
@@ -33,7 +35,7 @@ const EXPR_INDEX = Any[]
 """
 Wrap a rate with a julia expression.
 """
-struct RateExpr{K}
+struct RateExpr{K} <: AbstractRate
     k::K
 
     # A julia Expr is mutable and not concrete so if we store it within the struct we turn it
@@ -126,7 +128,7 @@ A rate taken from a lookup table.
 
 The parameter `H` is a hash of the lookup table; this allows to for compile-time prefetch of the lookup.
 """
-struct RateLookup{L, I, H}
+struct RateLookup{L, I, H} <: AbstractRate
     lookup::L
     index::I
 
@@ -154,3 +156,24 @@ end
 @inline prefetch(r::Reaction, args...) = prefetch(r.k, args...)
 
 varname(::Type{RateLookup{L, H}}) where {L, H} = string(H)
+
+
+"""
+A wrapping struct to allow cunstructions such as f * Rate(...) or Rate(...) / f.
+Note that for this to work Rate must be <: AbstractRate (or, trivially, a number).
+It will not work for functions because I do not want to type-pirate *(::Real, ::Function).
+In that case use ScaledRate(f, ::Function).
+"""
+struct ScaledRate{T, R}
+    factor::T
+    rate::R
+end
+
+
+@inline evalk(f::ScaledRate, args...; kw...) = @inline f.factor * evalk(f.rate, args...; kw...)
+@inline prefetch(f::ScaledRate, args...) = prefetch(f.rate, args...)
+varname(::Type{ScaledRate{T, R}}) where {T, R} = varname(R)
+
+Base.:*(factor::Real, k::AbstractRate) = ScaledRate(factor, k)
+Base.:/(k::AbstractRate, denom::Real) = ScaledRate(1/denom, k)
+
