@@ -132,9 +132,12 @@ struct RateLookup{L, I, H} <: AbstractRate
     lookup::L
     index::I
 
-    function RateLookup(lookup::L, index=nothing) where L
+    # The index of the arguments passed to derivs or derivs! that will be picked up
+    narg::Int
+    
+    function RateLookup(lookup::L, index=nothing; narg=1) where L
         H = hash(L)
-        new{L, typeof(index), H}(lookup, index)
+        new{L, typeof(index), H}(lookup, index, narg)
     end
 end
 
@@ -151,9 +154,9 @@ function RateLookup(lookup, index::Symbol)
 end
 
 
-@inline evalk(f::RateLookup, args...; prefetch=nothing) = @inline f.lookup(args..., f.index; prefetch)
-@inline prefetch(f::RateLookup, args...) = prefetch(f.lookup, args...)
-@inline prefetch(r::Reaction, args...) = prefetch(r.k, args...)
+@inline evalk(f::RateLookup, args...; prefetch=nothing) = @inline f.lookup(args[f.narg], f.index; prefetch)
+@inline prefetch(f::RateLookup, args...) = prefetch(f.lookup, args[f.narg])
+@inline prefetch(r::Reaction, args...) = prefetch(r.k, args[f.narg])
 
 varname(::Type{RateLookup{L, H}}) where {L, H} = string(H)
 
