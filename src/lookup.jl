@@ -1,6 +1,6 @@
 # Code for lookup tables with arbitrary transformations in X and Y.
 
-struct LookupTable{TX, TY, F, G, GI}
+struct LookupTable{TX, TY, F, G, GI, C}
     # X data (f(x)).  Much faster when this is a uniform range
     fx::TX
 
@@ -17,7 +17,7 @@ struct LookupTable{TX, TY, F, G, GI}
     ginv::GI
 
     # Optionally we provide names to the columns in g to facilitate the description
-    colnames::Vector{Symbol}
+    colnames::C
 
     # Extrapolate after max. value?
     extrapol::Bool
@@ -30,8 +30,8 @@ struct LookupTable{TX, TY, F, G, GI}
             @assert all(==(length(fx)), length.(gy))
         end
         
-        new{typeof(fx), typeof(gy), typeof(f), typeof(g), typeof(ginv)}(fx, gy, f, g, ginv, colnames,
-                                                                        extrapol)
+        new{typeof(fx), typeof(gy), typeof(f), typeof(g),
+            typeof(ginv), typeof(colnames)}(fx, gy, f, g, ginv, colnames, extrapol)
     end        
 end
 
