@@ -11,6 +11,7 @@ using MacroTools: @capture, postwalk
 using LaTeXStrings
 using Latexify
 using REPL
+using Adapt
 
 @template DEFAULT =
     """
@@ -26,5 +27,6 @@ include("derivs.jl")
 include("parse.jl")
 include("lookup.jl")
 include("latexify.jl")
+include("adapt.jl")
 
 end
